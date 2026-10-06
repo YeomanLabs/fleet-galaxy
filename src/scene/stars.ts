@@ -77,6 +77,9 @@ export class Stars {
   private toAlpha: Float32Array;
   private posT = 1;
   private colT = 1;
+  private posDur = 1.6;
+  private colDur = 0.6;
+  private stagger = 0.35;
 
   constructor(count: number) {
     this.count = count;
@@ -130,7 +133,9 @@ export class Stars {
   }
 
   /** Ease to new positions. `instant` skips the animation (first load). */
-  setPositions(target: Float32Array, instant = false): void {
+  setPositions(target: Float32Array, instant = false, duration = 1.6, stagger = 0.35): void {
+    this.posDur = duration;
+    this.stagger = stagger;
     this.fromPos.set(this.pos);
     this.toPos.set(target);
     this.posT = instant ? 1 : 0;
@@ -138,7 +143,8 @@ export class Stars {
     this.geometry.attributes.position.needsUpdate = true;
   }
 
-  setStyle(colors: Float32Array, sizes: Float32Array, alphas: Float32Array, instant = false): void {
+  setStyle(colors: Float32Array, sizes: Float32Array, alphas: Float32Array, instant = false, duration = 0.6): void {
+    this.colDur = duration;
     this.fromCol.set(this.col);
     this.toCol.set(colors);
     this.toSize.set(sizes);
@@ -156,11 +162,11 @@ export class Stars {
     this.material.uniforms.uTime.value = time;
 
     if (this.posT < 1) {
-      this.posT = Math.min(1, this.posT + dt / 1.6);
+      this.posT = Math.min(1, this.posT + dt / this.posDur);
       const e = easeInOutCubic(this.posT);
       // Stagger by index so stars peel off in waves rather than moving as one block.
       for (let i = 0; i < this.count; i++) {
-        const lag = ((i * 7919) % 1000) / 1000 * 0.35;
+        const lag = ((i * 7919) % 1000) / 1000 * this.stagger;
         const t = Math.min(1, Math.max(0, (e - lag) / (1 - lag)));
         const k = easeInOutCubic(t);
         for (let c = 0; c < 3; c++) {
@@ -172,7 +178,7 @@ export class Stars {
     }
 
     if (this.colT < 1) {
-      this.colT = Math.min(1, this.colT + dt / 0.6);
+      this.colT = Math.min(1, this.colT + dt / this.colDur);
       const k = easeInOutCubic(this.colT);
       for (let j = 0; j < this.count * 3; j++) this.col[j] = this.fromCol[j] + (this.toCol[j] - this.fromCol[j]) * k;
       for (let i = 0; i < this.count; i++) {

@@ -82,7 +82,7 @@ describe('classify', () => {
 describe('loader', () => {
   it('rejects junk with a readable message', () => {
     expect(() => parseFleet('nope')).toThrow(FleetError);
-    expect(() => parseFleet('{"version":2,"devices":[]}')).toThrow(/version/);
+    expect(() => parseFleet('{"version":3,"devices":[]}')).toThrow(/version/);
     expect(() => parseFleet('{"version":1,"devices":[{"id":"a"}]}')).toThrow(/No usable devices/);
   });
 

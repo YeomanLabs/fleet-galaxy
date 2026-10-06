@@ -26,33 +26,60 @@
       <div id="snapshot" class="snapshot"></div>
     </header>
 
+    <div class="entity" id="entity" role="tablist" hidden>
+      <button role="tab" data-entity="devices">Devices</button>
+      <button role="tab" data-entity="people">People</button>
+    </div>
+
     <div class="topbar">
       <label class="search">
         <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4.5 4.5" /></svg>
         <input id="search" type="search" placeholder="Find a device, user or model" autocomplete="off" spellcheck="false" />
         <kbd>/</kbd>
       </label>
-      <button id="load-btn" class="btn">Load fleet.json</button>
+      <button id="load-btn" class="btn" title="fleet.json (several for a timeline) or a .csv of extra fields">Load data</button>
       <button id="help-btn" class="btn icon" aria-label="About and shortcuts">?</button>
-      <input id="file-input" type="file" accept=".json,application/json" hidden />
+      <input id="file-input" type="file" accept=".json,.csv,application/json,text/csv" multiple hidden />
     </div>
 
     <aside class="controls panel" id="controls">
       <section>
         <h2>Color stars by</h2>
+        <button id="lens-btn" class="lens-btn" aria-haspopup="listbox" title="All lenses (L)">
+          <span class="txt"><span class="g"></span><span class="l"></span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+        </button>
         <div id="color-modes" class="seg" role="radiogroup"></div>
+        <p id="lens-desc" class="lens-desc" hidden></p>
         <ul id="legend" class="legend"></ul>
         <p class="hint">Click a category to isolate it.</p>
       </section>
       <section>
         <h2>Group galaxies by</h2>
         <div id="group-modes" class="chips" role="radiogroup"></div>
+        <select id="group-more" class="group-more" aria-label="Group by a lens"></select>
       </section>
       <section class="explain">
         <h2>Reading the sky</h2>
-        <p>Each star is one device. Devices that checked in recently orbit the bright core. The longer a device stays silent, the further it drifts into the halo.</p>
+        <p>Each star is one device (or person). Recent activity orbits the bright core; the longer something stays silent, the further it drifts into the halo. Bigger stars need attention.</p>
       </section>
     </aside>
+
+    <div class="lens-pop panel" id="lens-pop" hidden>
+      <input id="lens-search" type="search" placeholder="Search lenses" autocomplete="off" spellcheck="false" />
+      <div id="lens-list" class="lens-list" role="listbox"></div>
+    </div>
+
+    <div class="timeline panel" id="timeline" hidden>
+      <button id="tl-play" class="btn icon play" aria-label="Play timeline"></button>
+      <div class="tl-body">
+        <div class="tl-head"><span id="tl-date"></span><span id="tl-metric" class="tl-metric"></span></div>
+        <div class="tl-track">
+          <svg id="tl-spark" viewBox="0 0 600 34" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="" /><path class="line" d="" /></svg>
+          <input id="tl-range" type="range" min="0" max="0" step="1" value="0" aria-label="Snapshot date" />
+        </div>
+      </div>
+    </div>
 
     <button id="controls-toggle" class="btn controls-toggle" aria-controls="controls">Controls</button>
 
@@ -86,7 +113,7 @@
     <div class="drop" id="drop" hidden>
       <div>
         <strong>Drop fleet.json to load your fleet</strong>
-        <span>It's read in your browser. Nothing is uploaded.</span>
+        <span>Several snapshots make a timeline. A .csv adds custom fields. Everything is read in your browser; nothing is uploaded.</span>
       </div>
     </div>
 
@@ -98,22 +125,25 @@
       <p>An Intune-managed Windows fleet drawn as a galaxy. Each galaxy is a group (a site, ring, model or release) and each star is one device.</p>
       <h3>What you're looking at</h3>
       <ul>
-        <li><b>Distance from the core</b> shows how recently the device checked in. Devices silent for a week or more drift past the disc edge into the halo.</li>
-        <li><b>Color</b> is whatever you pick on the left: compliance, last check-in, Windows release or patch level.</li>
-        <li><b>Bigger stars</b> need attention.</li>
-        <li><b>Patch Tuesday replay</b> simulates this month's update rolling through your rings. It's a projection from ring and check-in data, not install history.</li>
+        <li><b>Distance from the core</b> is recency: device check-in, or a person's last sign-in. Anything silent for a week or more drifts past the disc edge into the halo.</li>
+        <li><b>Color</b> is the lens you pick: compliance, patching, deployments, Defender, Endpoint Analytics, lifecycle, or any custom field. Press <kbd>L</kbd> for all of them.</li>
+        <li><b>Bigger stars</b> need attention. Dim ones have no data.</li>
+        <li><b>People</b> (<kbd>P</kbd>) switches to users: MFA strength, sign-in activity, risk and licenses. Click a person to see their devices, and draw lines between them in the device galaxy.</li>
+        <li><b>The timeline</b> appears when you load several snapshots. Play it to watch the fleet change day by day.</li>
       </ul>
       <h3>Shortcuts</h3>
       <dl class="keys">
-        <dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Color mode</dd>
+        <dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Quick lenses</dd>
+        <dt><kbd>L</kbd></dt><dd>All lenses</dd>
         <dt><kbd>G</kbd></dt><dd>Next grouping</dd>
+        <dt><kbd>P</kbd></dt><dd>Devices / People</dd>
         <dt><kbd>/</kbd></dt><dd>Search</dd>
-        <dt><kbd>R</kbd></dt><dd>Patch Tuesday replay</dd>
-        <dt><kbd>Space</kbd></dt><dd>Pause the slow orbit</dd>
+        <dt><kbd>Space</kbd></dt><dd>Play the timeline (or pause the orbit)</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Step a day</dd>
         <dt><kbd>Esc</kbd></dt><dd>Clear selection and filters</dd>
       </dl>
-      <h3>Your own fleet</h3>
-      <p>Run <code>Export-FleetGalaxy.ps1</code> from the repo (read-only Graph permissions), then drop the resulting <code>fleet.json</code> here. Add <code>-Anonymize</code> to hash device names and drop users before you share a screenshot. The file never leaves your browser.</p>
+      <h3>Your own tenant</h3>
+      <p>Use the Fleet Galaxy desktop app to sign in and pull everything directly, or run <code>Export-FleetGalaxy.ps1</code> and drop the <code>fleet.json</code> here. Drop a CSV (keyed by device name, serial or UPN) to add your own fields, such as warranty dates. Files never leave your browser.</p>
     </dialog>
 
     <script type="module" src="/src/main.ts"></script>
