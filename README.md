@@ -121,6 +121,10 @@ Releases: push a `v*` tag and GitHub Actions builds the Windows installer and th
 - The collector's Graph endpoints were checked against Microsoft's documentation, are tested against a mocked Graph, and have run against a small live tenant (devices, rings, apps, Defender, people with MFA, sign-ins and licenses all returned real data). Endpoint Analytics, profile and remediation results haven't been seen with real data yet, and nothing has run at enterprise scale. Issues and PRs welcome.
 - Installers aren't code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn on first run.
 
+## Related
+
+[i9s](https://github.com/YeomanLabs/i9s) is the same tenant in your terminal: a k9s-style, keyboard-driven UI for devices, people and apps, with sync and restart.
+
 ## License
 
 MIT © YeomanLabs
