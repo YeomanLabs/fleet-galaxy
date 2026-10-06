@@ -20,7 +20,7 @@ describe('lenses', () => {
   const ids = lenses.map((l) => l.id);
 
   it('exposes built-in, known-field and deployment lenses for the demo', () => {
-    for (const id of ['compliance', 'patch', 'bitlocker', 'field:defender.risk', 'field:ea.startupScore', 'field:lifecycle.warrantyDays', 'deploy:app-teams', 'deploy:rem-defs']) {
+    for (const id of ['compliance', 'patch', 'bitlocker', 'field:defender.state', 'field:ea.startupScore', 'field:lifecycle.warrantyDays', 'deploy:app-teams', 'deploy:rem-defs']) {
       expect(ids).toContain(id);
     }
     // Real hardware age exists, so the enrollment stand-in is skipped.

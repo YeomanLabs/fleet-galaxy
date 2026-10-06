@@ -2,113 +2,124 @@
 
 # Fleet Galaxy
 
-**Your Intune-managed Windows fleet as a living 3D galaxy.**
+**Your Intune devices and Entra users as a living 3D galaxy.**
 
-Every star is a device. Every galaxy is a site, update ring, model or Windows release.
-Spot the stragglers, watch Patch Tuesday roll through your rings, and click any star to see why it's red.
+Every star is a device or a person. Stale machines drift to the edges, failed deployments glow red,
+and a timeline shows you how the fleet got where it is.
 
-[**Live demo →**](https://yeomanlabs.github.io/fleet-galaxy/) · [Use your own tenant](#your-own-fleet) · [How it works](#how-it-works)
+[**Download**](https://yeomanlabs.github.io/fleet-galaxy/) · [**Live demo**](https://yeomanlabs.github.io/fleet-galaxy/demo/) · [Permissions and privacy](docs/app-registration.md) · [How it works](#how-it-works)
 
-![Fleet Galaxy: 3,500 devices across eight sites](docs/hero.png)
+![Fleet Galaxy: 3,500 devices across eight sites](public/shots/hero.png)
 
 </div>
 
 ## Reading the sky
 
-The layout isn't decoration. Where a star sits tells you something:
+The layout isn't decoration:
 
-- **Distance from the core is check-in recency.** Devices that synced in the last week orbit the bright core in spiral arms. A device that's been silent for 7+ days drifts past the disc edge into the halo, further the longer it's gone. Stale devices are visible at a glance as the scattered stars around each galaxy.
-- **Color is whatever you're asking about:** compliance, last check-in, Windows release or patch level.
-- **Bigger stars need attention.** Healthy devices are small and quiet; non-compliant, behind or stale devices are larger.
+- **Distance from the core is recency.** Devices that synced recently orbit the bright core. Anything silent for a week drifts past the disc edge into the halo, further the longer it's gone. For people, it's their last sign-in.
+- **Color is the lens you pick.** There are more than 30, and any custom field becomes one.
+- **Size is attention.** Healthy stars are small and quiet. Dim ones have no data.
 - **Each galaxy's core glows with its average health,** and the bar under its label shows the mix.
+
+## Lenses
+
+| Group | Lenses |
+| --- | --- |
+| Health | Compliance (with the failing policies), last check-in, BitLocker |
+| Updates | Windows release, patch level, update ring |
+| Deployments | One lens per app, configuration profile and remediation: installed, failed, conflict, pending, fixed, recurring |
+| Security | Defender device state, active malware, real-time protection, overdue signatures |
+| Experience | Endpoint Analytics startup score, boot time, app reliability, battery health |
+| Lifecycle | Hardware age, warranty, Windows 11 readiness |
+| People | MFA strength, sign-in activity, user risk, license, license clean-up, devices per person |
+| Custom | Drop a CSV keyed by device name, serial or UPN. Every column becomes a lens; dates become "days from snapshot" |
 
 <table>
 <tr>
-<td width="50%"><img src="docs/rings-patch.png" alt="Grouped by update ring, colored by patch level"><br><sub><b>Group by update ring, color by patch level.</b> Ring 3 (critical systems) is visibly behind.</sub></td>
-<td width="50%"><img src="docs/device.png" alt="Device detail panel"><br><sub><b>Click any star.</b> Failing compliance policies, build, ring, last check-in, and a deep link into Intune.</sub></td>
+<td width="50%"><img src="public/shots/deployment.png" alt="Galaxies colored by one app's install status"><br><sub><b>Deployments.</b> GlobalProtect is failing mostly in the remote-worker galaxy.</sub></td>
+<td width="50%"><img src="public/shots/device.png" alt="Device panel listing failed deployments"><br><sub><b>Click any star</b> for failing policies, every unhappy deployment, Defender and Endpoint Analytics data, and a deep link into Intune.</sub></td>
+</tr>
+<tr>
+<td width="50%"><img src="public/shots/people.png" alt="People galaxy colored by MFA strength"><br><sub><b>People.</b> Users grouped by department, colored by MFA strength. Click a person to draw lines between their devices.</sub></td>
+<td width="50%"><img src="public/shots/rings-patch.png" alt="Grouped by update ring, colored by patch level"><br><sub><b>Group by anything.</b> Update rings colored by patch level: Ring 3 is visibly behind.</sub></td>
 </tr>
 </table>
 
-## Patch Tuesday replay
+## Time machine
 
-Press **R** and watch this month's cumulative update ripple through the fleet: pilot first, then early adopters, then broad, outward from each galaxy's core, with a live adoption curve.
+Load several snapshots and a timeline appears. Press play to watch Patch Tuesday roll through your rings, Windows 10 machines turn into Windows 11 stars, new laptops arrive and retired ones fade out. The sparkline shows the current lens's "needs attention" share over time.
 
-![Patch Tuesday replay](docs/replay.gif)
+![Sixty days of a demo fleet on the Windows release lens](public/shots/timeline.gif)
 
-> The replay is a **projection**, and the UI labels it as one. `fleet.json` carries no install history, so it's simulated from each device's ring, check-in habits and current patch level. Devices that are behind today never "install" in the replay.
+The desktop app saves one snapshot per day you refresh, so the history builds itself. The demo ships 60 days of synthetic history.
 
-## Your own fleet
+## Get it
 
-Fleet Galaxy is a static page. Your data never leaves your machine: you export a `fleet.json` and drop it onto the page, and it's read locally in your browser.
+**Desktop app (recommended).** Download it for Windows or macOS from the [download page](https://yeomanlabs.github.io/fleet-galaxy/), click **Sign in with Microsoft**, and your galaxy appears. It works in any tenant. You choose which data sources to pull, and it only asks for those permissions, all read-only. Organisations that don't allow third-party apps can [use their own app registration](docs/app-registration.md).
 
-```powershell
-# PowerShell 7.2+, Microsoft.Graph.Authentication module
-./export/Export-FleetGalaxy.ps1
-```
+**Web version.** The [live demo](https://yeomanlabs.github.io/fleet-galaxy/demo/) runs entirely in your browser. Drop in a `fleet.json` (or several, for a timeline) and it's read locally; nothing is uploaded.
 
-Then open the [live demo](https://yeomanlabs.github.io/fleet-galaxy/) (or your own copy) and drag `fleet.json` onto it.
+**PowerShell.** `export/Export-FleetGalaxy.ps1` writes a core `fleet.json` (devices, compliance, rings) with read-only Graph scopes, for people who'd rather run a script.
 
-| Option | What it does |
-| --- | --- |
-| `-Anonymize` | Hashes device names and drops users and the tenant name, so you can share screenshots or the file. |
-| `-SiteSource NamePrefix -SiteNames @{ MKE = 'Milwaukee' }` | Groups by a device-name prefix instead of Intune device category. `-SitePattern` takes your own regex. |
-| `-RingGroups ([ordered]@{ Pilot = '<groupId>'; Broad = '<groupId>' })` | Maps rings yourself. By default, rings are detected from your Windows Update for Business ring policies and ordered by quality update deferral. |
-| `-IncludeReasons` | Fetches which compliance policies each non-compliant device fails (one extra call per device). |
-| `-SkipRings` | Leaves rings out entirely. |
+## Privacy
 
-**Permissions (all read-only, delegated):**
+- There is no Fleet Galaxy backend. Data goes from Microsoft Graph to your computer and nowhere else.
+- Delegated, read-only permissions: the app sees only what your own Intune and Entra roles allow.
+- Tokens are encrypted with Windows DPAPI (Keychain on macOS). Snapshots are gzipped files in your app data folder.
+- Intune's bulk report export only accepts ReadWrite permissions, so Fleet Galaxy deliberately doesn't use it. That's why Defender status is read per device and Settings Catalog profile status is left out.
+- Exports can be pseudonymized (salted hashes for device names, people and serials) before you share them.
 
-| Scope | Why |
-| --- | --- |
-| `DeviceManagementManagedDevices.Read.All` | The device list |
-| `DeviceManagementConfiguration.Read.All` | Update ring policies, compliance policy states |
-| `GroupMember.Read.All` | Ring group membership |
-
-The `fleet.json` format is documented in [`src/data/types.ts`](src/data/types.ts). Anything that produces it works: a ConfigMgr query, a CSV conversion, another MDM.
+Full permission list, licensing notes and the bring-your-own-registration guide: [docs/app-registration.md](docs/app-registration.md).
 
 ## How it works
 
 ```
-Export-FleetGalaxy.ps1 ──► fleet.json ──► drop on page ──► parseFleet() ──► classify ──► layout ──► WebGL
-   (Graph, read-only)                       (in browser)     (validate)     (patch rank,   (spiral   (one Points
-                                                                              check-in age)  galaxies)  draw call)
+                 ┌──────── desktop app (Electron) ────────┐
+Microsoft Graph ─┤ MSAL sign-in → collector → snapshots    ├─► same page as the web demo
+ (read-only)     └─────────────────────────────────────────┘
+                                                    fleet.json (v2) ─► lenses ─► layout ─► WebGL
 ```
 
-- **One draw call for the whole fleet.** All devices are a single `THREE.Points` cloud with a custom shader for glow, twinkle, hover rings and the replay flash. Positions and colors ease on the CPU, which stays cheap at tens of thousands of devices and keeps picking exact.
-- **Layout is deterministic.** Each device's position comes from a hash of its id, so a device keeps its place in its arm when you regroup, and screenshots are reproducible.
-- **Patch level without a release calendar.** Revisions are ranked within each servicing family (24H2 and 25H2 share one), ignoring stray preview or out-of-band builds below a 0.5% share. "Current" means the newest revision a meaningful part of the fleet runs.
-- **Postprocessing:** Unreal bloom over the star field, an fbm-noise nebula on a backdrop sphere, and CSS2D labels.
-- **The demo fleet** is generated in the browser from a fixed seed: 3,500 fictional devices at "Contoso Manufacturing", with site personalities (Dallas holds on to Windows 10, remote workers check in less often, kiosks sit in the critical ring).
+- **One draw call for the whole fleet.** All stars are a single `THREE.Points` cloud with a custom shader for glow, twinkle, hover rings and arrival flashes. Positions and colors ease on the CPU, which stays cheap at tens of thousands of stars and keeps picking exact.
+- **Deterministic layout.** A star's position comes from a hash of its id, so it keeps its place when you regroup or scrub through time.
+- **Lens engine.** Built-in facts, well-known fields, deployments and arbitrary custom fields all compile to the same `Lens` interface: categories (healthiest first) and a key per star. Number fields bucket by declared stops or by quantiles.
+- **Time machine.** Snapshots are aligned by id, so index *i* is the same device on every day; devices that don't exist yet or were retired get a presence flag of 0 and fade.
+- **Collector.** Independent sources (devices, rings, compliance, deployments, Defender, Endpoint Analytics, people, risk). Throttling is retried with `Retry-After`, and a source that's denied for permissions or licensing becomes a warning instead of a failure.
+- **Patch level without a release calendar.** Revisions are ranked within each servicing family (24H2 and 25H2 share one), ignoring stray preview builds.
 
 ## Keyboard
 
 | Key | Action |
 | --- | --- |
-| `1`–`4` | Color by compliance / check-in / Windows release / patch level |
+| `1`–`4` | Quick lenses |
+| `L` | All lenses |
 | `G` | Next grouping |
-| `/` | Search devices, users, models |
-| `R` | Patch Tuesday replay |
-| `Space` | Pause the slow orbit |
+| `P` | Devices / People |
+| `/` | Search devices, people, serials, models |
+| `Space` | Play the timeline (or pause the orbit) |
+| `←` `→` | Step a day |
 | `Esc` | Clear selection and filters |
-
-Click a legend entry to isolate it (Shift+click to toggle). Click a KPI to jump to the devices behind it.
 
 ## Development
 
 ```bash
 npm install
-npm run dev        # http://localhost:5175
-npm test           # vitest
-npm run build      # typecheck + production build to dist/
-npm run capture    # regenerate docs/ screenshots and replay.gif (needs the dev server and Edge)
+npm run dev          # http://localhost:5175 (landing) and /demo/ (app)
+npm test             # vitest: classification, lenses, layout, history, CSV, collector against a fake Graph
+npm run build        # typecheck + production build to dist/
+npm run desktop      # build and run the desktop app
+npm run dist:win     # Windows installer → release/Fleet-Galaxy-Setup.exe
+npm run capture      # regenerate screenshots and timeline.gif (needs the dev server and Edge)
 ```
 
-Built with TypeScript, three.js and Vite. No framework, no backend.
+Releases: push a `v*` tag and GitHub Actions builds the Windows installer and the macOS dmg and attaches them to a release.
 
 ## Status
 
-- The page and demo fleet are tested (unit tests for classification, layout, loader and replay; visual checks on desktop and mobile).
-- `Export-FleetGalaxy.ps1` has been tested against a mocked Graph (paging, ring detection from device and user groups, exclusions, anonymization) and run successfully against a small live tenant. It hasn't been run at enterprise scale yet; issues and PRs welcome.
+- The page, demo data, lens engine, time machine and desktop shell are tested: 34 unit tests, plus visual checks on desktop and mobile and a packaged-app smoke test.
+- The collector's Graph endpoints were checked against Microsoft's documentation and are tested against a mocked Graph. The core device export has run against a live tenant; the deployments, Defender, Endpoint Analytics and people sources haven't been run against production data yet. Issues and PRs welcome.
+- Installers aren't code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn on first run.
 
 ## License
 

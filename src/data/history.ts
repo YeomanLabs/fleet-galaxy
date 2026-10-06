@@ -188,7 +188,7 @@ function* demoHistoryDays(days: number): Generator<Fleet, void> {
 
       const back = (end - at) / DAY;
       const fields = { ...d.fields };
-      fields['defender.signatureAgeDays'] = Math.round(Math.max(0.05, Math.min(age, 60) * (0.6 + jitter() * 0.5) + (fields['defender.realtime'] === false ? 4 : 0)) * 10) / 10;
+      fields['defender.signaturesOverdue'] = Math.min(age, 60) * (0.6 + jitter() * 0.5) + (fields['defender.realtime'] === false ? 4 : 0) > 3;
       fields['lifecycle.ageYears'] = Math.round(((fields['lifecycle.ageYears'] as number) - back / 365) * 10) / 10;
       fields['lifecycle.warrantyDays'] = (fields['lifecycle.warrantyDays'] as number) + Math.round(back);
       fields['lifecycle.win11'] = build >= 22000 ? 'onWin11' : fields['lifecycle.win11'] === 'notCapable' ? 'notCapable' : 'capable';

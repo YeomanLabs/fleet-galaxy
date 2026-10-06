@@ -24,6 +24,8 @@ import { Constellation } from './scene/constellation';
 import { computeLayout, type Layout } from './scene/layout';
 import { easeInOutCubic, Stars } from './scene/stars';
 import { devicePanel, esc, relativeAge, userPanel } from './ui/panels';
+import { native } from './native';
+import { initDesktop } from './ui/desktop';
 import { buildView, type Entity, type View } from './view';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1148,19 +1150,45 @@ if (reducedMotion || capture) {
   // Open on a wide shot, then glide in.
   setTimeout(() => intro && frameAll(3.2), 250);
 }
-// The demo's 60-day history is generated after first paint so the page opens fast.
-const historyReady = new Promise<void>((resolve) => {
-  setTimeout(async () => {
-    const history = await generateDemoHistoryAsync();
-    // Skip it if someone loaded their own data in the meantime.
-    if (snapshots.length === 1 && snapshots[0].demo) {
-      const keepSelected = selected;
-      setSnapshots(history, { keepCamera: true });
-      if (keepSelected >= 0) select(keepSelected);
-    }
-    resolve();
-  }, capture ? 0 : 600);
-});
+/** Upgrades the single demo snapshot to its 60-day history, after first paint so the page opens fast. */
+function loadDemoHistory(delay: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    setTimeout(async () => {
+      const history = await generateDemoHistoryAsync();
+      // Skip it if someone loaded their own data in the meantime.
+      if (snapshots.length === 1 && snapshots[0].demo) {
+        const keepSelected = selected;
+        setSnapshots(history, { keepCamera: true });
+        if (keepSelected >= 0) select(keepSelected);
+      }
+      resolve();
+    }, delay);
+  });
+}
+
+const api = native();
+let historyReady: Promise<void> = Promise.resolve();
+if (api) {
+  // Desktop app: the demo galaxy stays as a backdrop until the user's own snapshots load.
+  void initDesktop(api, {
+    loadSnapshots(jsons) {
+      try {
+        const fleets = jsons.map((j) => parseFleet(j));
+        setSnapshots(fleets.length > 1 ? alignSnapshots(fleets) : fleets);
+      } catch (err) {
+        toast(`Couldn't read saved snapshots: ${(err as Error).message}`, true);
+      }
+    },
+    loadDemo() {
+      setSnapshots([generateDemoFleet()]);
+      historyReady = loadDemoHistory(300);
+    },
+    toast,
+    openFiles: () => fileInput.click(),
+  });
+} else {
+  historyReady = loadDemoHistory(capture ? 0 : 600);
+}
 if (!capture) requestAnimationFrame(frame);
 
 // Handy in the console and for scripts/capture.mjs: window.fleetGalaxy
@@ -1171,7 +1199,7 @@ Object.assign(window, {
     get t() { return t; },
     get layout() { return layout; },
     get stars() { return stars; },
-    historyReady,
+    get historyReady() { return historyReady; },
     camera, controls, frameAll, flyTo, step, goTo, setEntity, setLens, setGroup, select, startReplay, readFiles,
     loadFleet: (f: Fleet) => setSnapshots([f]),
     play() { if (!playing) $('tl-play').click(); },

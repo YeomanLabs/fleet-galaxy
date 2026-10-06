@@ -61,13 +61,13 @@ const INTUNE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
 function formatField(key: string, v: FieldValue): string {
   if (v == null) return '—';
   if (typeof v === 'boolean') return v ? 'Yes' : 'No';
-  if (key === 'defender.signatureAgeDays') return relativeAge(v as number).replace(' ago', ' old');
+  if (key === 'defender.signaturesOverdue') return v ? 'Overdue' : 'Up to date';
+  if (key === 'defender.state') return ({ clean: 'Clean', fullScanPending: 'Full scan pending', rebootPending: 'Reboot pending', manualStepsPending: 'Manual steps pending', offlineScanPending: 'Offline scan pending', critical: 'Critical' } as Record<string, string>)[String(v)] ?? String(v);
   if (key === 'ea.bootSeconds') return `${v} s`;
   if (key === 'ea.batteryHealth') return `${v}%`;
   if (key === 'lifecycle.ageYears') return `${v} years`;
   if (key === 'lifecycle.warrantyDays') return (v as number) < 0 ? `Expired ${Math.round(-(v as number) / 30)} mo ago` : `${Math.round((v as number) / 30)} months left`;
   if (key === 'lifecycle.win11') return ({ onWin11: 'On Windows 11', capable: 'Capable', notCapable: 'Not capable' } as Record<string, string>)[String(v)] ?? String(v);
-  if (key === 'defender.risk') return String(v)[0].toUpperCase() + String(v).slice(1);
   return String(v);
 }
 

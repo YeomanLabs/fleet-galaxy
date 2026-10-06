@@ -157,9 +157,9 @@ export function generateDemoFleet(seed = 20261006, generated = '2026-10-06T14:00
       if (unique.length) compliance = age < 3 && rand() < 0.35 ? 'ingrace' : 'noncompliant';
       if (rand() < 0.012) compliance = 'unknown';
 
-      let risk: Risk = pickWeighted(rand, [['none', 86], ['low', 9], ['medium', 3.5], ['high', 1.5]] as const);
-      if (threats) risk = rand() < 0.6 ? 'high' : 'medium';
-      else if (build === 19045 && risk === 'none' && rand() < 0.3) risk = 'low';
+      // Defender device state: mostly clean, threats make it critical.
+      let defState: string = pickWeighted(rand, [['clean', 93], ['fullScanPending', 2.5], ['rebootPending', 3], ['manualStepsPending', 1], ['offlineScanPending', 0.5]] as const);
+      if (threats) defState = rand() < 0.6 ? 'critical' : 'manualStepsPending';
 
       // Endpoint Analytics: model sets the baseline, neglect drags it down.
       const hasEa = rand() < 0.93 && age < 30;
@@ -214,9 +214,9 @@ export function generateDemoFleet(seed = 20261006, generated = '2026-10-06T14:00
         enrolled: new Date(now - enrolledAgo * DAY).toISOString(),
         encrypted,
         fields: {
-          'defender.risk': risk,
+          'defender.state': defState,
           'defender.threats': threats,
-          'defender.signatureAgeDays': Math.round(sigAge * 10) / 10,
+          'defender.signaturesOverdue': sigAge > 3,
           'defender.realtime': realtime,
           'ea.startupScore': hasEa ? Math.round(startup) : null,
           'ea.bootSeconds': hasEa ? Math.round(boot) : null,
@@ -347,7 +347,7 @@ function makeDeployments(devices: Device[], rand: () => number): Deployment[] {
     dep('cfg-win10esu', 'profile', 'Windows 10 ESU activation', isWin10, () => (roll(0.18) ? 'failed' : roll(0.1) ? 'pending' : 'success')),
 
     dep('rem-defs', 'remediation', 'Defender: stale definitions', () => true,
-      (d) => ((f(d, 'defender.signatureAgeDays') as number) > 3 ? (roll(0.7) ? 'fixed' : 'recurred') : 'success'),
+      (d) => (f(d, 'defender.signaturesOverdue') ? (roll(0.3) ? 'fixed' : 'recurred') : roll(0.05) ? 'fixed' : 'success'),
       `${REMEDIATION_BASE}Defender/StaleDefinitions`),
     dep('rem-escrow', 'remediation', 'BitLocker: escrow recovery key to Entra', () => true,
       (d) => (d.encrypted === false ? 'failed' : roll(0.05) ? 'fixed' : 'success'),

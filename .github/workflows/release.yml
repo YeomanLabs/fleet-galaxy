@@ -1,0 +1,58 @@
+# Builds the desktop installers and publishes them as a GitHub release.
+# Push a tag like v2.0.0 to run it. The download page links to
+# releases/latest/download/Fleet-Galaxy-Setup.exe and Fleet-Galaxy.dmg.
+name: Release desktop app
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            script: dist:win
+            files: release/Fleet-Galaxy-Setup.exe
+          - os: macos-14 # Apple Silicon
+            script: dist:mac
+            files: release/Fleet-Galaxy.dmg
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Electron downloads its binary lazily; the packager needs it on disk now.
+      - run: node node_modules/electron/install.js
+      - run: npm test
+      - run: npm run ${{ matrix.script }}
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true

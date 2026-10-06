@@ -4,148 +4,160 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fleet Galaxy</title>
-    <meta name="description" content="Your Intune-managed Windows fleet as a living 3D galaxy." />
+    <meta name="description" content="See your Intune devices and Entra users as a living 3D galaxy. Free desktop app for Windows and macOS. Read-only, and your data never leaves your computer." />
+    <meta property="og:title" content="Fleet Galaxy" />
+    <meta property="og:description" content="Your whole fleet, in one sky. A 3D view of Intune and Entra for endpoint engineers." />
+    <meta property="og:image" content="shots/hero.png" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%237dd3fc'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%23a5b4fc' stroke-width='1.6' transform='rotate(-25 16 16)'/%3E%3C/svg%3E" />
   </head>
-  <body>
-    <canvas id="scene" aria-label="3D view of the device fleet"></canvas>
-    <div id="labels"></div>
+  <body class="landing">
+    <canvas id="sky" aria-hidden="true"></canvas>
 
-    <header class="brand panel-free">
-      <div class="wordmark">
-        <svg viewBox="0 0 32 32" aria-hidden="true">
-          <circle cx="16" cy="16" r="3.6" />
-          <ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(-25 16 16)" />
-        </svg>
-        <span>Fleet Galaxy</span>
+    <nav class="nav">
+      <a class="logo" href="./">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="3.6" /><ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(-25 16 16)" /></svg>
+        Fleet Galaxy
+      </a>
+      <div class="nav-links">
+        <a href="#lenses">Lenses</a>
+        <a href="#time">Time machine</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+        <a class="pill" href="demo/">Live demo</a>
       </div>
-      <div class="tenant">
-        <span id="tenant-name">Loading…</span>
-        <span id="demo-badge" class="badge" hidden>Demo data</span>
+    </nav>
+
+    <header class="hero">
+      <p class="eyebrow">For Intune and Entra admins</p>
+      <h1>Your whole fleet,<br /><span>in one sky.</span></h1>
+      <p class="lede">
+        Fleet Galaxy turns every device and every person in your tenant into a star. Stale devices drift to the edges, failed deployments
+        glow red, and a timeline shows you how the fleet got where it is.
+      </p>
+      <div class="cta">
+        <a class="btn primary big" id="dl-primary" href="https://github.com/YeomanLabs/fleet-galaxy/releases/latest/download/Fleet-Galaxy-Setup.exe">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0L4.5 6.5M8 10l3.5-3.5M2.5 13.5h11" /></svg>
+          <span>Download for Windows</span>
+        </a>
+        <a class="btn big" href="demo/">Try the live demo</a>
       </div>
-      <div id="snapshot" class="snapshot"></div>
+      <p class="sub" id="dl-sub">
+        <span id="dl-version">Free and open source</span> · <a id="dl-alt" href="https://github.com/YeomanLabs/fleet-galaxy/releases/latest/download/Fleet-Galaxy.dmg">macOS (Apple Silicon)</a> · Read-only · Your data stays on your computer
+      </p>
+      <figure class="shot hero-shot">
+        <img src="shots/timeline.gif" alt="Sixty days of a 3,500-device fleet: Windows 10 machines turning into Windows 11 stars, galaxy by galaxy" width="760" height="428" />
+      </figure>
     </header>
 
-    <div class="entity" id="entity" role="tablist" hidden>
-      <button role="tab" data-entity="devices">Devices</button>
-      <button role="tab" data-entity="people">People</button>
-    </div>
-
-    <div class="topbar">
-      <label class="search">
-        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4.5 4.5" /></svg>
-        <input id="search" type="search" placeholder="Find a device, user or model" autocomplete="off" spellcheck="false" />
-        <kbd>/</kbd>
-      </label>
-      <button id="load-btn" class="btn" title="fleet.json (several for a timeline) or a .csv of extra fields">Load data</button>
-      <button id="help-btn" class="btn icon" aria-label="About and shortcuts">?</button>
-      <input id="file-input" type="file" accept=".json,.csv,application/json,text/csv" multiple hidden />
-    </div>
-
-    <aside class="controls panel" id="controls">
-      <section>
-        <h2>Color stars by</h2>
-        <button id="lens-btn" class="lens-btn" aria-haspopup="listbox" title="All lenses (L)">
-          <span class="txt"><span class="g"></span><span class="l"></span></span>
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
-        </button>
-        <div id="color-modes" class="seg" role="radiogroup"></div>
-        <p id="lens-desc" class="lens-desc" hidden></p>
-        <ul id="legend" class="legend"></ul>
-        <p class="hint">Click a category to isolate it.</p>
-      </section>
-      <section>
-        <h2>Group galaxies by</h2>
-        <div id="group-modes" class="chips" role="radiogroup"></div>
-        <select id="group-more" class="group-more" aria-label="Group by a lens"></select>
-      </section>
-      <section class="explain">
-        <h2>Reading the sky</h2>
-        <p>Each star is one device (or person). Recent activity orbits the bright core; the longer something stays silent, the further it drifts into the halo. Bigger stars need attention.</p>
-      </section>
-    </aside>
-
-    <div class="lens-pop panel" id="lens-pop" hidden>
-      <input id="lens-search" type="search" placeholder="Search lenses" autocomplete="off" spellcheck="false" />
-      <div id="lens-list" class="lens-list" role="listbox"></div>
-    </div>
-
-    <div class="timeline panel" id="timeline" hidden>
-      <button id="tl-play" class="btn icon play" aria-label="Play timeline"></button>
-      <div class="tl-body">
-        <div class="tl-head"><span id="tl-date"></span><span id="tl-metric" class="tl-metric"></span></div>
-        <div class="tl-track">
-          <svg id="tl-spark" viewBox="0 0 600 34" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="" /><path class="line" d="" /></svg>
-          <input id="tl-range" type="range" min="0" max="0" step="1" value="0" aria-label="Snapshot date" />
+    <section class="read">
+      <h2>Every star is telling you something</h2>
+      <div class="three">
+        <div class="card">
+          <div class="glyph g-dist"></div>
+          <h3>Distance is recency</h3>
+          <p>Devices that checked in recently orbit the bright core. Anything silent for a week drifts past the disc edge into the halo, so forgotten machines are visible at a glance.</p>
+        </div>
+        <div class="card">
+          <div class="glyph g-color"></div>
+          <h3>Color is your question</h3>
+          <p>Compliance, patch level, a single app's install status, Defender health, boot time, warranty, MFA strength. Pick a lens and the whole sky re-colors.</p>
+        </div>
+        <div class="card">
+          <div class="glyph g-size"></div>
+          <h3>Size is attention</h3>
+          <p>Healthy stars stay small and quiet. The ones that need you are bigger and brighter, and the stats tell you exactly how many.</p>
         </div>
       </div>
-    </div>
+    </section>
 
-    <button id="controls-toggle" class="btn controls-toggle" aria-controls="controls">Controls</button>
-
-    <footer class="kpis" id="kpis"></footer>
-
-    <div class="replay panel" id="replay">
-      <button id="replay-btn" class="btn primary">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" /></svg>
-        <span>Patch Tuesday replay</span>
-      </button>
-      <div class="replay-live" id="replay-live" hidden>
-        <div class="replay-head">
-          <span class="day">Day <b id="replay-day">0</b><i>/21</i></span>
-          <span class="pct"><b id="replay-pct">0%</b> patched</span>
+    <section class="lenses" id="lenses">
+      <div class="row">
+        <div class="copy">
+          <p class="eyebrow">Deployments</p>
+          <h2>Find the cluster that's failing</h2>
+          <p>Pick any app, configuration profile or remediation script and see where it succeeded, failed, conflicted or never ran. "Why is the VPN failing?" turns into a red cluster in the remote-worker galaxy.</p>
+          <ul class="ticks"><li>Win32, store and Microsoft 365 apps</li><li>Configuration profiles, including conflicts</li><li>Remediations: fixed, recurring, failed</li></ul>
         </div>
-        <svg id="replay-chart" viewBox="0 0 220 56" preserveAspectRatio="none" aria-hidden="true">
-          <path class="area" d="" />
-          <path class="line" d="" />
-          <line class="cursor" x1="0" x2="0" y1="0" y2="56" />
-        </svg>
-        <div class="replay-foot">
-          <span title="fleet.json has no install history. This projects the rollout from each device's ring, check-in habits and current patch level.">Simulated rollout ⓘ</span>
-          <span><button id="replay-pause" class="link">Pause</button> · <button id="replay-stop" class="link">Close</button></span>
+        <figure class="shot"><img src="shots/deployment.png" alt="Galaxies colored by GlobalProtect VPN install status" loading="lazy" width="1600" height="900" /></figure>
+      </div>
+      <div class="row flip">
+        <div class="copy">
+          <p class="eyebrow">People</p>
+          <h2>Switch from devices to people</h2>
+          <p>Users become stars too, grouped by department or office: MFA strength, dormant and never-used accounts, risky users, and licenses nobody is using. Click a person to light up all of their devices.</p>
+          <ul class="ticks"><li>Passwordless, Authenticator, SMS-only, no MFA</li><li>Dormant 30 and 90+ days, disabled accounts that still own devices</li><li>License clean-up list</li></ul>
+        </div>
+        <figure class="shot"><img src="shots/people.png" alt="People galaxy grouped by department, colored by MFA strength" loading="lazy" width="1600" height="900" /></figure>
+      </div>
+      <div class="row">
+        <div class="copy">
+          <p class="eyebrow">Click any star</p>
+          <h2>From "it's red" to "here's why"</h2>
+          <p>The detail panel shows the failing compliance policies, every deployment that's unhappy on that device, Defender and Endpoint Analytics data, warranty, and a deep link straight into Intune.</p>
+          <ul class="ticks"><li>Search by device, user, serial or model</li><li>Group by site, ring, release, model or any lens</li><li>Drop in a CSV to add your own fields, like warranty dates</li></ul>
+        </div>
+        <figure class="shot"><img src="shots/device.png" alt="Device detail panel listing failed deployments" loading="lazy" width="1600" height="900" /></figure>
+      </div>
+      <div class="grid">
+        <div><b>Health</b><span>Compliance, check-in, BitLocker</span></div>
+        <div><b>Updates</b><span>Windows release, patch level, update rings</span></div>
+        <div><b>Security</b><span>Defender risk, threats, signatures, real-time protection</span></div>
+        <div><b>Experience</b><span>Startup score, boot time, app reliability, battery</span></div>
+        <div><b>Lifecycle</b><span>Hardware age, warranty, Windows 11 readiness</span></div>
+        <div><b>Custom</b><span>Any CSV column, keyed by device name, serial or UPN</span></div>
+      </div>
+    </section>
+
+    <section class="time" id="time">
+      <p class="eyebrow">Time machine</p>
+      <h2>Press play on the last 60 days</h2>
+      <p class="lede narrow">The desktop app saves a snapshot every day you refresh. Scrub the timeline and watch Patch Tuesday roll through your rings, Windows 10 machines turn into Windows 11 stars, new laptops arrive and retired ones fade out.</p>
+      <figure class="shot wide"><img src="shots/experience.png" alt="Galaxies grouped by model, colored by Endpoint Analytics startup score" loading="lazy" width="1600" height="900" /></figure>
+    </section>
+
+    <section class="privacy" id="privacy">
+      <div class="privacy-card">
+        <h2>No servers. No telemetry. Read-only.</h2>
+        <div class="two">
+          <ul class="ticks">
+            <li><b>Data goes from Microsoft Graph to your computer,</b> and nowhere else. There is no Fleet Galaxy backend.</li>
+            <li><b>Read-only, delegated permissions.</b> It sees only what your own Intune and Entra roles already allow.</li>
+            <li><b>You choose the sources.</b> Turn off People or Defender and those permissions are never requested.</li>
+          </ul>
+          <ul class="ticks">
+            <li><b>Tokens are encrypted</b> with Windows DPAPI (Keychain on macOS). Snapshots are plain files you can delete.</li>
+            <li><b>Bring your own app registration</b> if your organisation doesn't allow third-party apps. <a href="https://github.com/YeomanLabs/fleet-galaxy/blob/main/docs/app-registration.md">Five-minute guide</a>.</li>
+            <li><b>Open source,</b> MIT licensed. Read every line on <a href="https://github.com/YeomanLabs/fleet-galaxy">GitHub</a>.</li>
+          </ul>
         </div>
       </div>
-    </div>
+    </section>
 
-    <aside class="device panel" id="device" hidden aria-live="polite"></aside>
-    <div class="tooltip" id="tooltip" hidden></div>
+    <section class="steps">
+      <h2>Up and running in two minutes</h2>
+      <ol class="three">
+        <li class="card"><span class="n">1</span><h3>Download</h3><p>Install Fleet Galaxy on Windows or macOS. No account to create.</p></li>
+        <li class="card"><span class="n">2</span><h3>Sign in with Microsoft</h3><p>Use your work account. An admin approves the read-only permissions once for your tenant.</p></li>
+        <li class="card"><span class="n">3</span><h3>Explore</h3><p>Your galaxy appears. Hit Refresh each day and the timeline builds itself.</p></li>
+      </ol>
+      <p class="aside">Prefer scripts? <code>Export-FleetGalaxy.ps1</code> writes a <code>fleet.json</code> you can drop onto the <a href="demo/">web version</a>.</p>
+    </section>
 
-    <div class="drop" id="drop" hidden>
-      <div>
-        <strong>Drop fleet.json to load your fleet</strong>
-        <span>Several snapshots make a timeline. A .csv adds custom fields. Everything is read in your browser; nothing is uploaded.</span>
-      </div>
-    </div>
+    <section class="faq" id="faq">
+      <h2>Questions</h2>
+      <details><summary>Is it free?</summary><p>Yes. Fleet Galaxy is open source under the MIT license, built by <a href="https://yeomanlabs.co">YeomanLabs</a>.</p></details>
+      <details><summary>Windows says "Windows protected your PC". Is that expected?</summary><p>Yes, for now. The installer isn't code-signed yet, so SmartScreen warns on first run. Click <b>More info → Run anyway</b>, or build it yourself from the source.</p></details>
+      <details><summary>Which permissions does it ask for?</summary><p>Only read-only delegated Microsoft Graph permissions, and only for the data sources you switch on. The full list, and what each one is for, is in the <a href="https://github.com/YeomanLabs/fleet-galaxy/blob/main/docs/app-registration.md#permissions">permissions table</a>.</p></details>
+      <details><summary>What licenses does my tenant need?</summary><p>Intune for devices. Sign-in activity and MFA details need Entra ID P1, user risk needs P2, and Endpoint Analytics has to be turned on. Anything that isn't available is skipped, and the app tells you why.</p></details>
+      <details><summary>Does it work for any tenant?</summary><p>Yes. Sign in with any work account. Your admin consents once, or you can use your own app registration so nothing depends on YeomanLabs.</p></details>
+      <details><summary>How big a fleet can it handle?</summary><p>It's drawn in a single GPU pass, so tens of thousands of devices stay smooth on a normal laptop. The demo shows 3,500 devices and 3,400 people.</p></details>
+    </section>
 
-    <div class="toast" id="toast" hidden role="status"></div>
+    <footer class="foot">
+      <span>Fleet Galaxy · MIT · built by <a href="https://yeomanlabs.co">YeomanLabs</a></span>
+      <span><a href="demo/">Live demo</a> · <a href="https://github.com/YeomanLabs/fleet-galaxy">Source</a> · <a href="https://github.com/YeomanLabs/fleet-galaxy/releases">All releases</a></span>
+    </footer>
 
-    <dialog id="help" class="help">
-      <form method="dialog"><button class="close" aria-label="Close">×</button></form>
-      <h2>Fleet Galaxy</h2>
-      <p>An Intune-managed Windows fleet drawn as a galaxy. Each galaxy is a group (a site, ring, model or release) and each star is one device.</p>
-      <h3>What you're looking at</h3>
-      <ul>
-        <li><b>Distance from the core</b> is recency: device check-in, or a person's last sign-in. Anything silent for a week or more drifts past the disc edge into the halo.</li>
-        <li><b>Color</b> is the lens you pick: compliance, patching, deployments, Defender, Endpoint Analytics, lifecycle, or any custom field. Press <kbd>L</kbd> for all of them.</li>
-        <li><b>Bigger stars</b> need attention. Dim ones have no data.</li>
-        <li><b>People</b> (<kbd>P</kbd>) switches to users: MFA strength, sign-in activity, risk and licenses. Click a person to see their devices, and draw lines between them in the device galaxy.</li>
-        <li><b>The timeline</b> appears when you load several snapshots. Play it to watch the fleet change day by day.</li>
-      </ul>
-      <h3>Shortcuts</h3>
-      <dl class="keys">
-        <dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Quick lenses</dd>
-        <dt><kbd>L</kbd></dt><dd>All lenses</dd>
-        <dt><kbd>G</kbd></dt><dd>Next grouping</dd>
-        <dt><kbd>P</kbd></dt><dd>Devices / People</dd>
-        <dt><kbd>/</kbd></dt><dd>Search</dd>
-        <dt><kbd>Space</kbd></dt><dd>Play the timeline (or pause the orbit)</dd>
-        <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Step a day</dd>
-        <dt><kbd>Esc</kbd></dt><dd>Clear selection and filters</dd>
-      </dl>
-      <h3>Your own tenant</h3>
-      <p>Use the Fleet Galaxy desktop app to sign in and pull everything directly, or run <code>Export-FleetGalaxy.ps1</code> and drop the <code>fleet.json</code> here. Drop a CSV (keyed by device name, serial or UPN) to add your own fields, such as warranty dates. Files never leave your browser.</p>
-    </dialog>
-
-    <script type="module" src="/src/main.ts"></script>
+    <script type="module" src="./src/landing.ts"></script>
   </body>
 </html>

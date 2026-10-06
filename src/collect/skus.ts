@@ -1,0 +1,63 @@
+// Friendly names for common license SKUs. Graph only returns skuPartNumber;
+// Microsoft publishes the full mapping as a CSV ("Product names and service
+// plan identifiers for licensing"). This covers the usual suspects and falls
+// back to the part number.
+
+const NAMES: Record<string, string> = {
+  SPE_E3: 'Microsoft 365 E3',
+  SPE_E5: 'Microsoft 365 E5',
+  SPE_E3_USGOV_GCCHIGH: 'Microsoft 365 E3 (GCC High)',
+  SPE_F1: 'Microsoft 365 F3',
+  M365_F1: 'Microsoft 365 F1',
+  SPE_E3_NOPSTNCONF: 'Microsoft 365 E3 (no Teams)',
+  Microsoft_365_E3_EEA_no_Teams_with_Calling_Minutes: 'Microsoft 365 E3 (EEA, no Teams)',
+  Microsoft_365_E5_EEA_no_Teams_with_Calling_Minutes: 'Microsoft 365 E5 (EEA, no Teams)',
+  O365_w_o_Teams_Bundle_M3: 'Microsoft 365 E3 (no Teams)',
+  O365_w_o_Teams_Bundle_M5: 'Microsoft 365 E5 (no Teams)',
+  SPB: 'Microsoft 365 Business Premium',
+  O365_BUSINESS_PREMIUM: 'Microsoft 365 Business Standard',
+  O365_BUSINESS_ESSENTIALS: 'Microsoft 365 Business Basic',
+  O365_BUSINESS: 'Microsoft 365 Apps for business',
+  OFFICESUBSCRIPTION: 'Microsoft 365 Apps for enterprise',
+  STANDARDPACK: 'Office 365 E1',
+  ENTERPRISEPACK: 'Office 365 E3',
+  ENTERPRISEPREMIUM: 'Office 365 E5',
+  DESKLESSPACK: 'Office 365 F3',
+  EMS: 'Enterprise Mobility + Security E3',
+  EMSPREMIUM: 'Enterprise Mobility + Security E5',
+  AAD_PREMIUM: 'Microsoft Entra ID P1',
+  AAD_PREMIUM_P2: 'Microsoft Entra ID P2',
+  INTUNE_A: 'Intune Plan 1',
+  Microsoft_Intune_Suite: 'Microsoft Intune Suite',
+  WIN_DEF_ATP: 'Defender for Endpoint P2',
+  DEFENDER_ENDPOINT_P1: 'Defender for Endpoint P1',
+  ATP_ENTERPRISE: 'Defender for Office 365 P1',
+  THREAT_INTELLIGENCE: 'Defender for Office 365 P2',
+  WIN10_VDA_E3: 'Windows Enterprise E3',
+  WIN10_VDA_E5: 'Windows Enterprise E5',
+  POWER_BI_PRO: 'Power BI Pro',
+  POWER_BI_STANDARD: 'Power BI (free)',
+  PBI_PREMIUM_PER_USER: 'Power BI Premium Per User',
+  VISIOCLIENT: 'Visio Plan 2',
+  VISIO_PLAN1_DEPT: 'Visio Plan 1',
+  PROJECTPROFESSIONAL: 'Project Plan 3',
+  PROJECTPREMIUM: 'Project Plan 5',
+  FLOW_FREE: 'Power Automate (free)',
+  POWERAPPS_VIRAL: 'Power Apps (trial)',
+  TEAMS_EXPLORATORY: 'Teams Exploratory',
+  Microsoft_Teams_Premium: 'Teams Premium',
+  MCOEV: 'Teams Phone',
+  MCOMEETADV: 'Teams Audio Conferencing',
+  Microsoft_365_Copilot: 'Microsoft 365 Copilot',
+  EXCHANGESTANDARD: 'Exchange Online Plan 1',
+  EXCHANGEENTERPRISE: 'Exchange Online Plan 2',
+  EXCHANGEDESKLESS: 'Exchange Online Kiosk',
+  RIGHTSMANAGEMENT: 'Azure Information Protection P1',
+  WINDOWS_STORE: 'Windows Store for Business',
+  STREAM: 'Microsoft Stream',
+  CCIBOTS_PRIVPREV_VIRAL: 'Copilot Studio (trial)',
+};
+
+export function skuName(partNumber: string): string {
+  return NAMES[partNumber] ?? partNumber.replace(/_/g, ' ');
+}

@@ -1,0 +1,43 @@
+# Fleet Galaxy desktop installers.
+#   Windows: npm run dist:win   (NSIS, x64)
+#   macOS:   npm run dist:mac   (dmg, arm64; CI builds it on a Mac runner)
+# Artifact names are stable so the download page can link to
+# releases/latest/download/<name>.
+appId: com.yeomanlabs.fleetgalaxy
+productName: Fleet Galaxy
+copyright: Copyright © 2026 YeomanLabs
+electronDist: node_modules/electron/dist
+directories:
+  output: release
+  buildResources: build
+files:
+  - package.json
+  - dist/**
+  - dist-electron/**
+  - build/icon.png
+  - "!dist-electron/**/*.map"
+  # three.js and the page are already bundled into dist/.
+  - "!**/node_modules/three/**"
+  - "!**/node_modules/@fontsource-variable/**"
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.png
+  artifactName: Fleet-Galaxy-Setup.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: Fleet Galaxy
+mac:
+  target:
+    - target: dmg
+      arch: [arm64]
+  icon: build/icon.png
+  category: public.app-category.utilities
+  # No Apple Developer ID yet: ad-hoc signature, which Apple Silicon requires to run at all.
+  identity: "-"
+  hardenedRuntime: false
+  artifactName: Fleet-Galaxy.${ext}
+publish: null

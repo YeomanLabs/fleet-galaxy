@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fleet Galaxy</title>
+    <meta name="description" content="Your Intune-managed Windows fleet as a living 3D galaxy." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='4' fill='%237dd3fc'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%23a5b4fc' stroke-width='1.6' transform='rotate(-25 16 16)'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <canvas id="scene" aria-label="3D view of the device fleet"></canvas>
+    <div id="labels"></div>
+
+    <header class="brand panel-free">
+      <div class="wordmark">
+        <svg viewBox="0 0 32 32" aria-hidden="true">
+          <circle cx="16" cy="16" r="3.6" />
+          <ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(-25 16 16)" />
+        </svg>
+        <span>Fleet Galaxy</span>
+      </div>
+      <div class="tenant">
+        <span id="tenant-name">Loading…</span>
+        <span id="demo-badge" class="badge" hidden>Demo data</span>
+      </div>
+      <div id="snapshot" class="snapshot"></div>
+    </header>
+
+    <div class="entity" id="entity" role="tablist" hidden>
+      <button role="tab" data-entity="devices">Devices</button>
+      <button role="tab" data-entity="people">People</button>
+    </div>
+
+    <div class="topbar">
+      <label class="search">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" /><path d="M13 13l4.5 4.5" /></svg>
+        <input id="search" type="search" placeholder="Find a device, user or model" autocomplete="off" spellcheck="false" />
+        <kbd>/</kbd>
+      </label>
+      <button id="load-btn" class="btn" title="fleet.json (several for a timeline) or a .csv of extra fields">Load data</button>
+      <button id="help-btn" class="btn icon" aria-label="About and shortcuts">?</button>
+      <input id="file-input" type="file" accept=".json,.csv,application/json,text/csv" multiple hidden />
+    </div>
+
+    <aside class="controls panel" id="controls">
+      <section>
+        <h2>Color stars by</h2>
+        <button id="lens-btn" class="lens-btn" aria-haspopup="listbox" title="All lenses (L)">
+          <span class="txt"><span class="g"></span><span class="l"></span></span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4" /></svg>
+        </button>
+        <div id="color-modes" class="seg" role="radiogroup"></div>
+        <p id="lens-desc" class="lens-desc" hidden></p>
+        <ul id="legend" class="legend"></ul>
+        <p class="hint">Click a category to isolate it.</p>
+      </section>
+      <section>
+        <h2>Group galaxies by</h2>
+        <div id="group-modes" class="chips" role="radiogroup"></div>
+        <select id="group-more" class="group-more" aria-label="Group by a lens"></select>
+      </section>
+      <section class="explain">
+        <h2>Reading the sky</h2>
+        <p>Each star is one device (or person). Recent activity orbits the bright core; the longer something stays silent, the further it drifts into the halo. Bigger stars need attention.</p>
+      </section>
+    </aside>
+
+    <div class="lens-pop panel" id="lens-pop" hidden>
+      <input id="lens-search" type="search" placeholder="Search lenses" autocomplete="off" spellcheck="false" />
+      <div id="lens-list" class="lens-list" role="listbox"></div>
+    </div>
+
+    <div class="timeline panel" id="timeline" hidden>
+      <button id="tl-play" class="btn icon play" aria-label="Play timeline"></button>
+      <div class="tl-body">
+        <div class="tl-head"><span id="tl-date"></span><span id="tl-metric" class="tl-metric"></span></div>
+        <div class="tl-track">
+          <svg id="tl-spark" viewBox="0 0 600 34" preserveAspectRatio="none" aria-hidden="true"><path class="area" d="" /><path class="line" d="" /></svg>
+          <input id="tl-range" type="range" min="0" max="0" step="1" value="0" aria-label="Snapshot date" />
+        </div>
+      </div>
+    </div>
+
+    <button id="controls-toggle" class="btn controls-toggle" aria-controls="controls">Controls</button>
+
+    <footer class="kpis" id="kpis"></footer>
+
+    <div class="replay panel" id="replay">
+      <button id="replay-btn" class="btn primary">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11l9-5.5z" /></svg>
+        <span>Patch Tuesday replay</span>
+      </button>
+      <div class="replay-live" id="replay-live" hidden>
+        <div class="replay-head">
+          <span class="day">Day <b id="replay-day">0</b><i>/21</i></span>
+          <span class="pct"><b id="replay-pct">0%</b> patched</span>
+        </div>
+        <svg id="replay-chart" viewBox="0 0 220 56" preserveAspectRatio="none" aria-hidden="true">
+          <path class="area" d="" />
+          <path class="line" d="" />
+          <line class="cursor" x1="0" x2="0" y1="0" y2="56" />
+        </svg>
+        <div class="replay-foot">
+          <span title="fleet.json has no install history. This projects the rollout from each device's ring, check-in habits and current patch level.">Simulated rollout ⓘ</span>
+          <span><button id="replay-pause" class="link">Pause</button> · <button id="replay-stop" class="link">Close</button></span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="device panel" id="device" hidden aria-live="polite"></aside>
+    <div class="tooltip" id="tooltip" hidden></div>
+
+    <div class="drop" id="drop" hidden>
+      <div>
+        <strong>Drop fleet.json to load your fleet</strong>
+        <span>Several snapshots make a timeline. A .csv adds custom fields. Everything is read in your browser; nothing is uploaded.</span>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden role="status"></div>
+
+    <dialog id="help" class="help">
+      <form method="dialog"><button class="close" aria-label="Close">×</button></form>
+      <h2>Fleet Galaxy</h2>
+      <p>An Intune-managed Windows fleet drawn as a galaxy. Each galaxy is a group (a site, ring, model or release) and each star is one device.</p>
+      <h3>What you're looking at</h3>
+      <ul>
+        <li><b>Distance from the core</b> is recency: device check-in, or a person's last sign-in. Anything silent for a week or more drifts past the disc edge into the halo.</li>
+        <li><b>Color</b> is the lens you pick: compliance, patching, deployments, Defender, Endpoint Analytics, lifecycle, or any custom field. Press <kbd>L</kbd> for all of them.</li>
+        <li><b>Bigger stars</b> need attention. Dim ones have no data.</li>
+        <li><b>People</b> (<kbd>P</kbd>) switches to users: MFA strength, sign-in activity, risk and licenses. Click a person to see their devices, and draw lines between them in the device galaxy.</li>
+        <li><b>The timeline</b> appears when you load several snapshots. Play it to watch the fleet change day by day.</li>
+      </ul>
+      <h3>Shortcuts</h3>
+      <dl class="keys">
+        <dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>Quick lenses</dd>
+        <dt><kbd>L</kbd></dt><dd>All lenses</dd>
+        <dt><kbd>G</kbd></dt><dd>Next grouping</dd>
+        <dt><kbd>P</kbd></dt><dd>Devices / People</dd>
+        <dt><kbd>/</kbd></dt><dd>Search</dd>
+        <dt><kbd>Space</kbd></dt><dd>Play the timeline (or pause the orbit)</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>Step a day</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Clear selection and filters</dd>
+      </dl>
+      <h3>Your own tenant</h3>
+      <p>Use the Fleet Galaxy desktop app to sign in and pull everything directly, or run <code>Export-FleetGalaxy.ps1</code> and drop the <code>fleet.json</code> here. Drop a CSV (keyed by device name, serial or UPN) to add your own fields, such as warranty dates. Files never leave your browser.</p>
+    </dialog>
+
+    <script type="module" src="../src/main.ts"></script>
+  </body>
+</html>

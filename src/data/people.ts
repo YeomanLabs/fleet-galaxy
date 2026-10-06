@@ -14,6 +14,8 @@ export interface PeopleFacts {
   /** Device indices per user. */
   devices: number[][];
   primaryLicense: string[];
+  /** False when the tenant gave no sign-in activity at all (no Entra ID P1). */
+  hasSignIns: boolean;
 }
 
 /** License names roughly in order of "what tier is this person on". */
@@ -46,6 +48,7 @@ export function computePeopleFacts(fleet: Fleet): PeopleFacts {
     }),
     devices: users.map((u) => byUpn.get(u.upn.toLowerCase()) ?? []),
     primaryLicense: users.map((u) => primaryLicense(u.licenses)),
+    hasSignIns: users.some((u) => u.lastSignIn),
   };
 }
 
@@ -84,8 +87,9 @@ export function buildPeopleLenses(fleet: Fleet, pf: PeopleFacts): Lens[] {
         cat('dormant90', 'Dormant 90+ days', '#f472b6'),
         cat('never', 'Never signed in', '#fb923c'),
         cat('disabled', 'Disabled account', '#64748b', 1),
+        NO_DATA,
       ],
-      keyOf: (i) => signInBucket(pf.idle[i], u[i].enabled),
+      keyOf: (i) => (!u[i].enabled ? 'disabled' : pf.hasSignIns ? signInBucket(pf.idle[i], true) : NONE),
     },
     {
       id: 'risk', label: 'User risk', group: 'Identity', groupable: true,
@@ -123,7 +127,7 @@ export function buildPeopleLenses(fleet: Fleet, pf: PeopleFacts): Lens[] {
     keyOf: (i) => {
       if (!u[i].licenses?.length) return 'none';
       if (!u[i].enabled) return 'disabled';
-      return pf.idle[i] >= 30 ? 'idle' : 'ok';
+      return pf.hasSignIns && pf.idle[i] >= 30 ? 'idle' : 'ok';
     },
   });
 
@@ -152,7 +156,7 @@ export function peopleKpis(fleet: Fleet, pf: PeopleFacts, present?: Uint8Array):
     if (present && !present[i]) return;
     total++;
     if (x.mfa === 'strong' || x.mfa === 'passwordless') mfa++;
-    if (x.enabled && pf.idle[i] >= 30) dormant++;
+    if (x.enabled && pf.hasSignIns && pf.idle[i] >= 30) dormant++;
     if (x.risk === 'medium' || x.risk === 'high') risky++;
     if (!x.enabled && pf.devices[i].length) leavers++;
   });

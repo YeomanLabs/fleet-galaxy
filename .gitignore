@@ -5,3 +5,6 @@ fleet.json
 !examples/*.json
 .claude
 docs/frames
+dist-electron
+release
+.frames

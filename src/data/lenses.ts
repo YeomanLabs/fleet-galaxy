@@ -41,13 +41,15 @@ const cat = (key: string, label: string, color: string, weight = 1): Category =>
 /** Lenses for well-known field keys. They only appear when the fleet has that data. */
 export const KNOWN_FIELDS: LensDef[] = [
   {
-    field: 'defender.risk', label: 'Defender risk', group: 'Security', kind: 'category',
-    description: 'Machine risk level reported by Microsoft Defender for Endpoint.',
+    field: 'defender.state', label: 'Defender device state', group: 'Security', kind: 'category',
+    description: 'Microsoft Defender Antivirus state as reported to Intune.',
     categories: [
-      { key: 'none', label: 'No known risk', color: '#7dd3fc' },
-      { key: 'low', label: 'Low', color: '#fde68a' },
-      { key: 'medium', label: 'Medium', color: '#fb923c' },
-      { key: 'high', label: 'High', color: '#fb3d6b' },
+      { key: 'clean', label: 'Clean', color: '#7dd3fc' },
+      { key: 'fullScanPending', label: 'Full scan pending', color: '#fde68a' },
+      { key: 'rebootPending', label: 'Reboot pending', color: '#fdba74' },
+      { key: 'manualStepsPending', label: 'Manual steps pending', color: '#fb923c' },
+      { key: 'offlineScanPending', label: 'Offline scan pending', color: '#f0abfc' },
+      { key: 'critical', label: 'Critical', color: '#fb3d6b' },
     ],
   },
   {
@@ -56,8 +58,11 @@ export const KNOWN_FIELDS: LensDef[] = [
     description: 'Malware Defender has detected and not yet remediated.',
   },
   {
-    field: 'defender.signatureAgeDays', label: 'AV signature age', group: 'Security', kind: 'number',
-    stops: [1, 3, 7], good: 'low', bucketLabels: ['Under a day', '1 to 3 days', '3 to 7 days', 'Over a week'],
+    field: 'defender.signaturesOverdue', label: 'AV signatures', group: 'Security', kind: 'category',
+    categories: [
+      { key: 'false', label: 'Up to date', color: '#7dd3fc' },
+      { key: 'true', label: 'Overdue', color: '#fb923c' },
+    ],
   },
   {
     field: 'defender.realtime', label: 'Real-time protection', group: 'Security', kind: 'category',

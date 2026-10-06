@@ -113,7 +113,7 @@ function placeGroups(groups: GroupInfo[]): void {
         const dx = b.center[0] - a.center[0];
         const dz = b.center[2] - a.center[2];
         const dist = Math.hypot(dx, dz) || 0.001;
-        const min = (a.radius + b.radius) * 1.22;
+        const min = (a.radius + b.radius) * 1.35;
         if (dist < min) {
           const push = (min - dist) / 2;
           const ux = dx / dist, uz = dz / dist;

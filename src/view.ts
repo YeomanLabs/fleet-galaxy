@@ -54,7 +54,7 @@ export function buildView(fleet: Fleet, entity: Entity): View {
       ids: users.map((u) => u.id),
       names: users.map((u) => u.name || u.upn),
       // Never signed in sits far out in the halo, like a long-silent device.
-      age: Float32Array.from(people.idle, (x) => (Number.isFinite(x) ? Math.min(x, 9999) : 400)),
+      age: people.hasSignIns ? Float32Array.from(people.idle, (x) => (Number.isFinite(x) ? Math.min(x, 9999) : 400)) : new Float32Array(users.length),
       present: presence?.users ?? new Uint8Array(users.length).fill(1),
       lenses,
       groupings: [...PEOPLE_GROUPS, ...lensGroupings(lenses)],
