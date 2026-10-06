@@ -108,7 +108,7 @@ Built with TypeScript, three.js and Vite. No framework, no backend.
 ## Status
 
 - The page and demo fleet are tested (unit tests for classification, layout, loader and replay; visual checks on desktop and mobile).
-- `Export-FleetGalaxy.ps1` has been tested against a mocked Graph, including paging, ring detection from device and user groups, exclusions and anonymization. **It hasn't been run against a production tenant yet.** Issues and PRs welcome.
+- `Export-FleetGalaxy.ps1` has been tested against a mocked Graph (paging, ring detection from device and user groups, exclusions, anonymization) and run successfully against a small live tenant. It hasn't been run at enterprise scale yet; issues and PRs welcome.
 
 ## License
 
