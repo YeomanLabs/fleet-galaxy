@@ -54,7 +54,7 @@ export async function initDesktop(api: NativeApi, hooks: DesktopHooks): Promise<
       <div class="welcome-card panel">
         <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="3.6" /><ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(-25 16 16)" /></svg>
         <h1>See your fleet as a galaxy</h1>
-        <p>Sign in with your work account. Fleet Galaxy reads your Intune and Entra data with read-only permissions, straight from Microsoft Graph to this computer. Nothing goes to YeomanLabs or anywhere else.</p>
+        <p>Sign in with your work account. Fleet Galaxy reads your Intune and Entra data with read-only permissions, straight from Microsoft Graph to this computer. There's no Fleet Galaxy server and nothing to set up.</p>
         <div class="welcome-actions">
           <button class="btn primary big" data-act="signin">Sign in with Microsoft</button>
           <button class="btn big" data-act="demo">Explore the demo</button>
@@ -79,7 +79,7 @@ export async function initDesktop(api: NativeApi, hooks: DesktopHooks): Promise<
     menu.querySelector<HTMLElement>('[data-act=signout]')!.hidden = !st.signedIn;
     const fine = welcome.querySelector('[data-slot=fine]')!;
     fine.innerHTML = st.configured
-      ? 'Your tenant admin may be asked to approve the permissions once. <a href="#" data-act="settings">Choose data sources</a> · <a href="#" data-act="settings">Use your own app registration</a>'
+      ? 'Signs in through Microsoft Graph Command Line Tools, Microsoft\'s own app that already exists in your tenant. An admin may need to approve the read-only permissions once. <a href="#" data-act="settings">Choose data sources</a>'
       : `This build has no shared app registration yet. <a href="#" data-act="settings">Enter your own client ID</a> (<a href="${REG_DOCS}" data-ext>how to create one</a>).`;
     welcome.querySelector<HTMLButtonElement>('[data-act=signin]')!.disabled = !st.configured;
   }
@@ -97,9 +97,9 @@ export async function initDesktop(api: NativeApi, hooks: DesktopHooks): Promise<
         )
         .join('')}</div>
       <h3>App registration</h3>
-      <p>${st.usingDefaultApp ? 'Using the shared Fleet Galaxy app registration. ' : ''}Organisations that don't allow third-party apps can create their own in Entra ID and paste its client ID here. <a href="${REG_DOCS}" data-ext>Step-by-step guide</a>.</p>
+      <p>${st.usingDefaultApp ? 'Signing in through <b>Microsoft Graph Command Line Tools</b>, Microsoft\'s own app that exists in every tenant. ' : ''}To use a dedicated app registration in your tenant instead, paste its client ID here. <a href="${REG_DOCS}" data-ext>How to create one</a>.</p>
       <div class="fields">
-        <label>Client ID<input name="clientId" placeholder="${st.usingDefaultApp ? 'Leave blank for the shared app' : '00000000-0000-0000-0000-000000000000'}" value="${esc(st.settings.clientId)}" spellcheck="false" /></label>
+        <label>Client ID<input name="clientId" placeholder="${st.usingDefaultApp ? 'Blank = Graph Command Line Tools' : '00000000-0000-0000-0000-000000000000'}" value="${esc(st.settings.clientId)}" spellcheck="false" /></label>
         <label><span>Tenant ID <span class="opt">(optional)</span></span><input name="tenantId" placeholder="Any work account" value="${esc(st.settings.tenantId)}" spellcheck="false" /></label>
       </div>
       <h3>History</h3>

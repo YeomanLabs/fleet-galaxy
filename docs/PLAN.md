@@ -12,7 +12,7 @@ Agreed with the user 2026-10-06. Work top-down; one milestone at a time, committ
 
 ## Decisions
 
-- **Tenant-agnostic sign-in.** A multi-tenant public client app registration (owned by YeomanLabs) is the default; each org's admin consents in their own tenant, data flows Graph → user's PC only. Settings also accept "use my own app registration" (client id + optional tenant id) for orgs that won't consent to third-party apps. Creating the YeomanLabs registration changes the user's tenant: **ask before running the script.**
+- **Standalone sign-in, no YeomanLabs registration** (user's decision 2026-10-06: "not connected to anything else"). Default client is Microsoft Graph Command Line Tools (14d82eec-204b-4c2f-b7e8-296a70dab67e), present in every tenant. Settings accept the org's own app registration (client id + tenant id); scripts/register-app.ps1 creates one single-tenant.
 - **Incremental consent.** Each data source (devices, deployments, security, experience, users, risk) is a checkbox; the app only requests the scopes for what's enabled.
 - **One collector, in TypeScript** (`src/collect/`), run in the Electron main process with Node fetch. The PowerShell exporter stays as a core-only alternative (devices, rings, compliance) and keeps working.
 - **Schema v2** is a superset of v1; v1 files still load.

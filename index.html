@@ -126,7 +126,7 @@
           </ul>
           <ul class="ticks">
             <li><b>Tokens are encrypted</b> with Windows DPAPI (Keychain on macOS). Snapshots are plain files you can delete.</li>
-            <li><b>Bring your own app registration</b> if your organisation doesn't allow third-party apps. <a href="https://github.com/YeomanLabs/fleet-galaxy/blob/main/docs/app-registration.md">Five-minute guide</a>.</li>
+            <li><b>Nothing to register.</b> It signs in through Microsoft Graph Command Line Tools, Microsoft's own app that's already in your tenant. Prefer your own registration? <a href="https://github.com/YeomanLabs/fleet-galaxy/blob/main/docs/app-registration.md">Five-minute guide</a>.</li>
             <li><b>Open source,</b> MIT licensed. Read every line on <a href="https://github.com/YeomanLabs/fleet-galaxy">GitHub</a>.</li>
           </ul>
         </div>
@@ -137,7 +137,7 @@
       <h2>Up and running in two minutes</h2>
       <ol class="three">
         <li class="card"><span class="n">1</span><h3>Download</h3><p>Install Fleet Galaxy on Windows or macOS. No account to create.</p></li>
-        <li class="card"><span class="n">2</span><h3>Sign in with Microsoft</h3><p>Use your work account. An admin approves the read-only permissions once for your tenant.</p></li>
+        <li class="card"><span class="n">2</span><h3>Sign in with Microsoft</h3><p>Use your work account. No app registration needed; an admin may approve the read-only permissions once.</p></li>
         <li class="card"><span class="n">3</span><h3>Explore</h3><p>Your galaxy appears. Hit Refresh each day and the timeline builds itself.</p></li>
       </ol>
       <p class="aside">Prefer scripts? <code>Export-FleetGalaxy.ps1</code> writes a <code>fleet.json</code> you can drop onto the <a href="demo/">web version</a>.</p>
@@ -149,7 +149,7 @@
       <details><summary>Windows says "Windows protected your PC". Is that expected?</summary><p>Yes, for now. The installer isn't code-signed yet, so SmartScreen warns on first run. Click <b>More info → Run anyway</b>, or build it yourself from the source.</p></details>
       <details><summary>Which permissions does it ask for?</summary><p>Only read-only delegated Microsoft Graph permissions, and only for the data sources you switch on. The full list, and what each one is for, is in the <a href="https://github.com/YeomanLabs/fleet-galaxy/blob/main/docs/app-registration.md#permissions">permissions table</a>.</p></details>
       <details><summary>What licenses does my tenant need?</summary><p>Intune for devices. Sign-in activity and MFA details need Entra ID P1, user risk needs P2, and Endpoint Analytics has to be turned on. Anything that isn't available is skipped, and the app tells you why.</p></details>
-      <details><summary>Does it work for any tenant?</summary><p>Yes. Sign in with any work account. Your admin consents once, or you can use your own app registration so nothing depends on YeomanLabs.</p></details>
+      <details><summary>Does it work for any tenant? Does it connect to anything else?</summary><p>It works with any work account and connects only to Microsoft. There's no Fleet Galaxy server and no YeomanLabs app registration: it signs in through Microsoft Graph Command Line Tools, which already exists in your tenant, or through your own registration if you prefer.</p></details>
       <details><summary>How big a fleet can it handle?</summary><p>It's drawn in a single GPU pass, so tens of thousands of devices stay smooth on a normal laptop. The demo shows 3,500 devices and 3,400 people.</p></details>
     </section>
 

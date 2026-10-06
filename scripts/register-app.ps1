@@ -11,9 +11,9 @@
     permissions it uses. Permissions are looked up by name, so nothing here
     is hard-coded GUIDs.
 
-    -MultiTenant registers it for any organization (this is how the shared
-    YeomanLabs registration is made). Without it, the app only works in your
-    own tenant: the "bring your own app registration" setup.
+    Optional: by default Fleet Galaxy signs in through Microsoft Graph
+    Command Line Tools. Create a dedicated registration if your organisation
+    prefers one it controls (named, scoped, assignable to specific users).
 
     Signing in to create the app needs Application.ReadWrite.All (or an
     Application Administrator / Cloud Application Administrator role).
@@ -22,13 +22,10 @@
     ./register-app.ps1                 # single-tenant, for your own org
 .EXAMPLE
     ./register-app.ps1 -GrantConsent   # also grant tenant-wide admin consent
-.EXAMPLE
-    ./register-app.ps1 -MultiTenant    # shared registration for every org
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(
     [string] $DisplayName = 'Fleet Galaxy',
-    [switch] $MultiTenant,
     [switch] $GrantConsent
 )
 
@@ -63,7 +60,7 @@ $access = foreach ($name in $scopes) {
 
 $body = @{
     displayName            = $DisplayName
-    signInAudience         = if ($MultiTenant) { 'AzureADMultipleOrgs' } else { 'AzureADMyOrg' }
+    signInAudience         = 'AzureADMyOrg'
     isFallbackPublicClient = $true
     publicClient           = @{ redirectUris = @('http://localhost') }
     requiredResourceAccess = @(@{ resourceAppId = $graphAppId; resourceAccess = @($access) })
@@ -86,4 +83,4 @@ Write-Host "Created '$DisplayName'" -ForegroundColor Green
 Write-Host "  Client ID: $($app.appId)"
 Write-Host "  Tenant ID: $tenant"
 Write-Host ''
-Write-Host 'In Fleet Galaxy, open Settings and paste the Client ID (and the Tenant ID for a single-tenant app).'
+Write-Host 'In Fleet Galaxy, open Settings and paste the Client ID and Tenant ID.'

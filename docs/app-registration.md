@@ -1,10 +1,12 @@
-# Using your own app registration
+# Sign-in, permissions and your own app registration
 
-Fleet Galaxy signs in with a shared, multi-tenant Microsoft Entra app registration published by YeomanLabs. Your tenant admin consents to it once, and the data only ever travels between Microsoft Graph and your computer.
+Fleet Galaxy has no server and no app registration of its own. By default it signs in through **Microsoft Graph Command Line Tools** (client ID `14d82eec-204b-4c2f-b7e8-296a70dab67e`), the Microsoft-published public client that already exists in every tenant and that `Connect-MgGraph` uses. Data only ever travels between Microsoft Graph and your computer.
 
-Some organisations don't allow third-party apps. In that case, create your own registration in your tenant. It takes about five minutes, and Fleet Galaxy then has no dependency on YeomanLabs at all.
+The first time, an admin may need to approve the read-only permissions for that app. Organisations that prefer a registration they control (their own name, scoped permissions, assignment to specific admins) can create one in a few minutes and paste its IDs into Settings.
 
-## Option A: script
+## Your own registration
+
+### Option A: script
 
 From the repo, in PowerShell 7 with the `Microsoft.Graph.Authentication` module:
 
@@ -14,7 +16,7 @@ From the repo, in PowerShell 7 with the `Microsoft.Graph.Authentication` module:
 
 It creates a single-tenant public client called "Fleet Galaxy" with the permissions below, grants admin consent (drop `-GrantConsent` to have someone else approve it), and prints the client and tenant IDs.
 
-## Option B: Entra admin center
+### Option B: Entra admin center
 
 1. **Entra admin center → Identity → Applications → App registrations → New registration.**
    - Name: `Fleet Galaxy`

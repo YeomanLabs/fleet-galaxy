@@ -56,7 +56,7 @@ export const SOURCES: SourceInfo[] = [
 
 export interface Settings {
   sources: Record<SourceId, boolean>;
-  /** Blank = use the YeomanLabs multi-tenant app registration. */
+  /** Blank = Microsoft Graph Command Line Tools (DEFAULT_CLIENT_ID). */
   clientId: string;
   /** Blank = "organizations" (any work account). */
   tenantId: string;
@@ -67,10 +67,12 @@ export interface Settings {
 }
 
 /**
- * The YeomanLabs multi-tenant public client. Empty until the registration is
- * created; until then users must enter their own client id in Settings.
+ * Microsoft Graph Command Line Tools: Microsoft's own public client, present
+ * in every tenant (it's what Connect-MgGraph signs in with). Using it means
+ * Fleet Galaxy needs no app registration of its own and depends on nothing
+ * outside the user's tenant. Organisations can swap in their own client id.
  */
-export const DEFAULT_CLIENT_ID = '';
+export const DEFAULT_CLIENT_ID = '14d82eec-204b-4c2f-b7e8-296a70dab67e';
 
 export const DEFAULT_SETTINGS: Settings = {
   sources: { devices: true, deployments: true, security: true, experience: true, users: true, risk: false },
