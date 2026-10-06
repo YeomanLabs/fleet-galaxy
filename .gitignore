@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+fleet.json
+!examples/*.json
+.claude
+docs/frames
