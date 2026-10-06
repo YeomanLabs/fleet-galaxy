@@ -81,7 +81,8 @@ function tenant(overrides: [RegExp, Handler][] = []): [RegExp, Handler][] {
       { detectionState: 'notApplicable', managedDevice: { id: 'd3' } },
     ] })],
     // Security, per device.
-    [/beta\/deviceManagement\/managedDevices\/d\d\?/, (u) => ({ windowsActiveMalwareCount: u.includes('/d2?') ? 2 : 0, windowsProtectionState: { deviceState: u.includes('/d2?') ? 'critical' : 'clean', realTimeProtectionEnabled: true, signatureUpdateOverdue: u.includes('/d3?') } })],
+    [/managedDevices\/d\d\/windowsProtectionState/, (u) => ({ deviceState: u.includes('/d2/') ? 'critical' : 'clean', realTimeProtectionEnabled: true, signatureUpdateOverdue: u.includes('/d3/') })],
+    [/beta\/deviceManagement\/managedDevices\/d\d\?/, (u) => ({ windowsActiveMalwareCount: u.includes('/d2?') ? 2 : 0 })],
     // Endpoint Analytics: performance keyed by name, app health by id; battery denied.
     [/userExperienceAnalyticsDevicePerformance/, () => ({ value: [{ id: 'unrelated-guid', deviceName: 'D1', startupPerformanceScore: 88, coreBootTimeInMs: 20000, groupPolicyBootTimeInMs: 5000 }] })],
     [/userExperienceAnalyticsAppHealthDevicePerformance/, () => ({ value: [{ deviceId: 'd2', deviceAppHealthScore: 61.4 }] })],
@@ -145,7 +146,7 @@ describe('collector', () => {
     const { fleet, warnings } = await run(tenant([
       [/mobileApps/, denied],
       [/deviceHealthScripts/, denied],
-      [/beta\/deviceManagement\/managedDevices\/d\d\?/, denied],
+      [/windowsProtectionState/, denied],
       [/users\?\$select=.*signInActivity/, () => ({ __status: 403, code: 'Authentication_RequestFromNonPremiumTenantOrB2CTenant', message: 'Neither tenant is B2C or tenant does not have premium license' })],
       [/users\?\$select=.*\$top=999/, () => ({ value: [{ id: 'u1', userPrincipalName: 'd1@x.com', accountEnabled: true, userType: 'Member', assignedLicenses: [] }] })],
     ]));
@@ -161,7 +162,7 @@ describe('collector', () => {
   it('only calls the sources that are switched on', async () => {
     const log: string[] = [];
     await run(tenant(), { devices: true, deployments: false, security: false, experience: false, users: false, risk: false }, log);
-    expect(log.some((l) => /mobileApps|users\?|userExperience|beta\/deviceManagement\/managedDevices\//.test(l))).toBe(false);
+    expect(log.some((l) => /mobileApps|users\?|userExperience|windowsProtectionState/.test(l))).toBe(false);
   });
 });
 

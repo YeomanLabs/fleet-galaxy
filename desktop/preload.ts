@@ -21,3 +21,4 @@ const api: NativeApi = {
 };
 
 contextBridge.exposeInMainWorld('fleetGalaxyNative', api);
+if (process.env.FLEET_DEBUG === '1') contextBridge.exposeInMainWorld('fleetGalaxyDebug', { graph: (path: string) => ipcRenderer.invoke('debug-graph', path) });

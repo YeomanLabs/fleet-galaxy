@@ -118,7 +118,7 @@ Releases: push a `v*` tag and GitHub Actions builds the Windows installer and th
 ## Status
 
 - The page, demo data, lens engine, time machine and desktop shell are tested: 34 unit tests, plus visual checks on desktop and mobile and a packaged-app smoke test.
-- The collector's Graph endpoints were checked against Microsoft's documentation and are tested against a mocked Graph. The core device export has run against a live tenant; the deployments, Defender, Endpoint Analytics and people sources haven't been run against production data yet. Issues and PRs welcome.
+- The collector's Graph endpoints were checked against Microsoft's documentation, are tested against a mocked Graph, and have run against a small live tenant (devices, rings, apps, Defender, people with MFA, sign-ins and licenses all returned real data). Endpoint Analytics, profile and remediation results haven't been seen with real data yet, and nothing has run at enterprise scale. Issues and PRs welcome.
 - Installers aren't code-signed yet, so Windows SmartScreen and macOS Gatekeeper will warn on first run.
 
 ## License

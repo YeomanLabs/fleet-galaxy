@@ -125,6 +125,14 @@ ipcMain.handle('export-latest', async (_e, anon: boolean) => {
   return res.filePath;
 });
 
+// Dev only (FLEET_DEBUG=1): read-only Graph GET for diagnosing a tenant's responses.
+if (process.env.FLEET_DEBUG === '1') {
+  ipcMain.handle('debug-graph', async (_e, path: string) => {
+    const scopes = scopesFor(settings);
+    return new Graph({ token: () => auth.token(scopes) }).get(path).catch((err: Error) => ({ error: err.message }));
+  });
+}
+
 ipcMain.handle('open-external', (_e, url: string) => {
   if (/^https:\/\//.test(url)) return shell.openExternal(url);
 });
