@@ -56,7 +56,7 @@ The desktop app saves one snapshot per day you refresh, so the history builds it
 
 ## Get it
 
-**Desktop app (recommended).** Download it for Windows or macOS from the [download page](https://yeomanlabs.github.io/fleet-galaxy/), click **Sign in with Microsoft**, and your galaxy appears. It works in any tenant and connects to nothing but Microsoft: there's no server and no YeomanLabs app registration. It signs in through Microsoft Graph Command Line Tools (Microsoft's own app, already in every tenant), or through [your own app registration](docs/app-registration.md) if you prefer. You choose which data sources to pull, and it only asks for those permissions, all read-only.
+**Desktop app (recommended).** Download it for Windows or macOS from the [download page](https://yeomanlabs.github.io/fleet-galaxy/), click **Sign in with Microsoft**, and your galaxy appears. It works in any tenant and connects to nothing but Microsoft: there's no server and no app registration of its own. It signs in through Microsoft Graph Command Line Tools (Microsoft's own app, already in every tenant), or through [your own app registration](docs/app-registration.md) if you prefer. You choose which data sources to pull, and it only asks for those permissions, all read-only.
 
 **Web version.** The [live demo](https://yeomanlabs.github.io/fleet-galaxy/demo/) runs entirely in your browser. Drop in a `fleet.json` (or several, for a timeline) and it's read locally; nothing is uploaded.
 
@@ -127,4 +127,4 @@ Releases: push a `v*` tag and GitHub Actions builds the Windows installer and th
 
 ## License
 
-MIT © YeomanLabs
+MIT. See [LICENSE](LICENSE).
